@@ -1,0 +1,18 @@
+{
+  "name": "auth-backend",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon --exec \"node --import dotenv/config\" src/server.js",
+    "start": "node --import dotenv/config src/server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.89.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.6.0",
+    "jsonwebtoken": "^9.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
