@@ -1,0 +1,5 @@
+# Firebase / Google secrets
+firebase-service-account.json
+.env
+.env.local
+.env.production
