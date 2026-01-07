@@ -1,31 +1,235 @@
-// src/controllers/detail.controller.js
+// import { supabaseAdmin } from "../services/supabase.service.js";
+
+// /* =========================
+//    HELPER: GROUP TIPS
+// ========================= */
+// const groupTipsByCategory = (tips = []) => {
+//   const map = {};
+
+//   tips.forEach(item => {
+//     if (!map[item.category]) {
+//       map[item.category] = [];
+//     }
+//     map[item.category].push(item.tip);
+//   });
+
+//   return Object.keys(map).map(category => ({
+//     category,
+//     tips: map[category]
+//   }));
+// };
+
+// /* =========================
+//    GET ONE COUNTRY DETAIL
+// ========================= */
+// export const getDetail = async (req, res) => {
+//   const { id } = req.params;
+
+//   const [
+//     countryRes,
+//     overviewRes,
+//     lawsRes,
+//     attractionsRes,
+//     thingsRes,
+//     tipsRes
+//   ] = await Promise.all([
+//     supabaseAdmin.from("countries").select("*").eq("id", id).single(),
+//     supabaseAdmin
+//       .from("country_overview")
+//       .select("*")
+//       .eq("country_id", id)
+//       .maybeSingle(),
+//     supabaseAdmin.from("country_laws").select("*").eq("country_id", id),
+//     supabaseAdmin.from("country_attractions").select("*").eq("country_id", id),
+//     supabaseAdmin.from("country_things_to_do").select("*").eq("country_id", id),
+//     supabaseAdmin.from("country_tips").select("*").eq("country_id", id)
+//   ]);
+
+//   if (countryRes.error) {
+//     return res.status(404).json({ message: "Country not found" });
+//   }
+
+//   res.json({
+//     country: countryRes.data,
+//     overview: overviewRes.data,
+//     laws: lawsRes.data || [],
+//     attractions: attractionsRes.data || [],
+//     thingsToDo: thingsRes.data || [],
+//     tips: groupTipsByCategory(tipsRes.data)
+//   });
+// };
+
+// /* =========================
+//    GET ALL COUNTRIES DETAIL
+// ========================= */
+// export const getAllDetail = async (req, res) => {
+//   const { data: countries, error } = await supabaseAdmin
+//     .from("countries")
+//     .select("*");
+
+//   if (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+
+//   const result = await Promise.all(
+//     countries.map(async (country) => {
+//       const [
+//         overviewRes,
+//         lawsRes,
+//         attractionsRes,
+//         thingsRes,
+//         tipsRes
+//       ] = await Promise.all([
+//         supabaseAdmin
+//           .from("country_overview")
+//           .select("*")
+//           .eq("country_id", country.id)
+//           .maybeSingle(),
+//         supabaseAdmin.from("country_laws").select("*").eq("country_id", country.id),
+//         supabaseAdmin
+//           .from("country_attractions")
+//           .select("*")
+//           .eq("country_id", country.id),
+//         supabaseAdmin
+//          . from("country_things_to_do")
+//           .select("*")
+//           .eq("country_id", country.id),
+//         supabaseAdmin.from("country_tips").select("*").eq("country_id", country.id)
+//       ]);
+
+//       return {
+//         country,
+//         overview: overviewRes.data,
+//         laws: lawsRes.data || [],
+//         attractions: attractionsRes.data || [],
+//         thingsToDo: thingsRes.data || [],
+//         tips: groupTipsByCategory(tipsRes.data)
+//       };
+//     })
+//   );
+
+//   res.json(result);
+// };
+
+
+
+
+
 import { supabaseAdmin } from "../services/supabase.service.js";
 
+/* =========================
+   HELPER: GROUP TIPS BY CATEGORY
+========================= */
+const groupTipsByCategory = (tips = []) => {
+  const map = {};
+
+  tips.forEach(item => {
+    if (!map[item.category]) map[item.category] = [];
+    map[item.category].push(item.tip);
+  });
+
+  return Object.entries(map).map(([category, tips]) => ({
+    category,
+    tips
+  }));
+};
+
+/* =========================
+   GET ONE COUNTRY DETAIL
+   GET /api/countries/:id/detail
+========================= */
 export const getDetail = async (req, res) => {
-  const id = req.params.id;
+  const { id } = req.params;
 
   const [
-    country,
-    overview,
-    laws,
-    attractions,
-    things,
-    tips
+    countryRes,
+    overviewRes,
+    lawsRes,
+    attractionsRes,
+    thingsRes,
+    tipsRes
   ] = await Promise.all([
     supabaseAdmin.from("countries").select("*").eq("id", id).single(),
-    supabaseAdmin.from("country_overview").select("*").eq("country_id", id).single(),
+    supabaseAdmin.from("country_overview").select("*").eq("country_id", id).maybeSingle(),
     supabaseAdmin.from("country_laws").select("*").eq("country_id", id),
     supabaseAdmin.from("country_attractions").select("*").eq("country_id", id),
     supabaseAdmin.from("country_things_to_do").select("*").eq("country_id", id),
     supabaseAdmin.from("country_tips").select("*").eq("country_id", id)
   ]);
 
+  if (countryRes.error) {
+    return res.status(404).json({ message: "Country not found" });
+  }
+
   res.json({
-    country: country.data,
-    overview: overview.data,
-    laws: laws.data,
-    attractions: attractions.data,
-    thingsToDo: things.data,
-    tips: tips.data
+    country: {
+      id: countryRes.data.id,
+      name: countryRes.data.name,
+      region: countryRes.data.region,
+      flag: countryRes.data.flag,
+      capital: countryRes.data.capital,
+
+      /* ALWAYS PRESENT */
+      overview: overviewRes.data ?? null,
+      laws: lawsRes.data ?? [],
+      attractions: attractionsRes.data ?? [],
+      thingsToDo: thingsRes.data ?? [],
+      tips: tipsRes.data ? groupTipsByCategory(tipsRes.data) : []
+    }
   });
+};
+
+/* =========================
+   GET ALL COUNTRIES DETAIL
+   GROUPED BY REGION
+   GET /api/countries/detail
+========================= */
+export const getAllDetail = async (req, res) => {
+  const { data: countries, error } = await supabaseAdmin
+    .from("countries")
+    .select("*");
+
+  if (error) {
+    return res.status(400).json({ message: error.message });
+  }
+
+  const result = {};
+
+  for (const c of countries) {
+    const [
+      overviewRes,
+      lawsRes,
+      attractionsRes,
+      thingsRes,
+      tipsRes
+    ] = await Promise.all([
+      supabaseAdmin.from("country_overview").select("*").eq("country_id", c.id).maybeSingle(),
+      supabaseAdmin.from("country_laws").select("*").eq("country_id", c.id),
+      supabaseAdmin.from("country_attractions").select("*").eq("country_id", c.id),
+      supabaseAdmin.from("country_things_to_do").select("*").eq("country_id", c.id),
+      supabaseAdmin.from("country_tips").select("*").eq("country_id", c.id)
+    ]);
+
+    const region = c.region || "Unknown";
+
+    if (!result[region]) result[region] = [];
+
+    result[region].push({
+      country: {
+        id: c.id,
+        name: c.name,
+        region: c.region,
+        flag: c.flag,
+        capital: c.capital,
+
+        overview: overviewRes.data ?? null,
+        laws: lawsRes.data ?? [],
+        attractions: attractionsRes.data ?? [],
+        thingsToDo: thingsRes.data ?? [],
+        tips: tipsRes.data ? groupTipsByCategory(tipsRes.data) : []
+      }
+    });
+  }
+
+  res.json(result);
 };

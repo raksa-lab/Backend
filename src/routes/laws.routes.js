@@ -1,14 +1,58 @@
+// import { Router } from "express";
+// import {
+//   getAllLaws,
+//   getCountryLaws,
+//   getLaw,
+//   createLaw,
+//   updateLaw,
+//   deleteLaw
+// } from "../controllers/laws.controller.js";
+
+// const router = Router();
+
+// /**
+//  * GLOBAL laws
+//  */
+// router.get("/laws", getAllLaws);
+// router.get("/countries/laws", getAllLaws);   // ✅ NEW (what you want)
+
+// /**
+//  * COUNTRY laws
+//  */
+// router.get("/countries/:countryId/laws", getCountryLaws);
+// router.post("/countries/:countryId/laws", createLaw);
+
+// /**
+//  * SINGLE law
+//  */
+// router.get("/laws/:lawId", getLaw);
+// router.put("/laws/:lawId", updateLaw);
+// router.delete("/laws/:lawId", deleteLaw);
+
+// export default router;
+
+
 // src/routes/laws.routes.js
 import { Router } from "express";
-import * as l from "../controllers/laws.controller.js";
-import { protect } from "../middlewares/auth.middleware.js";
-import { adminOnly } from "../middlewares/admin.middleware.js";
+import {
+  getAllLaws,
+  getCountryLaws,
+  getLaw,
+  createLaw,
+  updateLaw,
+  deleteLaw
+} from "../controllers/laws.controller.js";
 
-const r = Router();
+const router = Router();
 
-r.get("/:id/laws", l.list);
-r.post("/:id/laws", protect, adminOnly, l.create);
-r.put("/:id/laws/:itemId", protect, adminOnly, l.update);
-r.delete("/:id/laws/:itemId", protect, adminOnly, l.remove);
+// GLOBAL laws
+router.get("/laws", getAllLaws);
+router.get("/laws/:lawId", getLaw);
+router.put("/laws/:lawId", updateLaw);
+router.delete("/laws/:lawId", deleteLaw);
 
-export default r;
+// COUNTRY laws (IMPORTANT)
+router.get("/:countryId/laws", getCountryLaws);
+router.post("/:countryId/laws", createLaw);
+
+export default router;
