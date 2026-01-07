@@ -1,14 +1,28 @@
-// src/routes/overview.routes.js
 import { Router } from "express";
-import * as o from "../controllers/overview.controller.js";
-import { protect } from "../middlewares/auth.middleware.js";
-import { adminOnly } from "../middlewares/admin.middleware.js";
+import {
+  getAllOverviews,
+  getOverview,
+  createOverview,
+  updateOverview,
+  deleteOverview
+} from "../controllers/overview.controller.js";
 
-const r = Router();
+const router = Router();
 
-r.get("/:id/overview", o.get);
-r.post("/:id/overview", protect, adminOnly, o.create);
-r.put("/:id/overview", protect, adminOnly, o.update);
-r.delete("/:id/overview", protect, adminOnly, o.remove);
+/* ALL OVERVIEWS */
+router.get("/overviews", getAllOverviews);
 
-export default r;
+/* COUNTRY OVERVIEW */
+router.get("/:id/overview", getOverview);
+router.post("/:id/overview", createOverview);
+router.put("/:id/overview", updateOverview);
+router.delete("/:id/overview", deleteOverview);
+
+export default router;
+
+
+// GET /api/overviews
+// GET /api/countries/:id/overview
+// POST /api/countries/:id/overview
+// PUT /api/countries/:id/overview
+// DELETE /api/countries/:id/overview
