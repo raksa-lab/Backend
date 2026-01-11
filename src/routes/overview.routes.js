@@ -6,6 +6,7 @@ import {
   updateOverview,
   deleteOverview
 } from "../controllers/overview.controller.js";
+import { adminOnly } from "../middlewares/admin.middleware.js";
 
 const router = Router();
 
@@ -14,9 +15,9 @@ router.get("/overviews", getAllOverviews);
 
 /* COUNTRY OVERVIEW */
 router.get("/:id/overview", getOverview);
-router.post("/:id/overview", createOverview);
-router.put("/:id/overview", updateOverview);
-router.delete("/:id/overview", deleteOverview);
+router.post("/:id/overview", createOverview , adminOnly);
+router.put("/:id/overview", updateOverview , adminOnly);
+router.delete("/:id/overview", deleteOverview , adminOnly);
 
 export default router;
 

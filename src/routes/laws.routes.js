@@ -68,13 +68,14 @@ import {
   updateLaw,
   deleteLaw
 } from "../controllers/laws.controller.js";
+import { adminOnly } from "../middlewares/admin.middleware.js";
 
 const router = Router();
 
 router.get("/laws", getAllLaws);
 router.get("/laws/:lawId", getLawById);
-router.post("/countries/:countryId/laws", createLaw);
-router.put("/laws/:lawId", updateLaw);
-router.delete("/laws/:lawId", deleteLaw);
+router.post("/countries/:countryId/laws", createLaw , adminOnly);
+router.put("/laws/:lawId", updateLaw , adminOnly);
+router.delete("/laws/:lawId", deleteLaw , adminOnly);
 
 export default router;

@@ -6,6 +6,7 @@ import {
   updateThing,
   deleteThing
 } from "../controllers/things.controller.js";
+import { adminOnly } from "../middlewares/admin.middleware.js";
 
 const router = Router();
 
@@ -14,8 +15,8 @@ router.get("/things-to-do", getAllThings);
 
 /* BY COUNTRY */
 router.get("/:countryId/things-to-do", getThingsByCountry);
-router.post("/:countryId/things-to-do", createThing);
-router.put("/:countryId/things-to-do/:thingId", updateThing);
-router.delete("/:countryId/things-to-do/:thingId", deleteThing);
+router.post("/:countryId/things-to-do", createThing , adminOnly);
+router.put("/:countryId/things-to-do/:thingId", updateThing, adminOnly);
+router.delete("/:countryId/things-to-do/:thingId", deleteThing , adminOnly);
 
 export default router;
