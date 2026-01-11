@@ -1,31 +1,3 @@
-// import express from "express";
-// import authRoutes from "./routes/auth.routes.js";
-
-// const app = express();
-
-// app.use(express.json());
-// app.use("/api/auth", authRoutes);
-
-// export default app;
-
-
-// import express from "express";
-// import authRoutes from "./routes/auth.routes.js";
-// import userRoutes from "./routes/user.routes.js";
-// import countryRoutes from "./routes/country.routes.js";
-// const app = express();
-
-// app.use(express.json());
-
-// app.use("/api/auth", authRoutes);
-// app.use("/api/user", userRoutes); 
-// app.use("/api/countries", countryRoutes);
-
-// export default app;
-
-
-
-
 import express from "express";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
@@ -35,10 +7,19 @@ const app = express();
 
 app.use(express.json());
 
+// ✅ TEST ROUTES
+app.get("/", (req, res) => {
+  res.send("Country Explorer Backend is Running ✅");
+});
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
+// ✅ API ROUTES
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
-
-// 🔥 ALL COUNTRY / REGION APIs HERE
 app.use("/api", routes);
 
 export default app;
+
