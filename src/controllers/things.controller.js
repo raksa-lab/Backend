@@ -1,8 +1,7 @@
 import { supabaseAdmin } from "../services/supabase.service.js";
 
 /* =========================
-   GET ALL THINGS TO DO (ALL COUNTRIES)
-   GET /api/things-to-do
+   GET ALL THINGS TO DO
 ========================= */
 export const getAllThings = async (req, res) => {
   const { data, error } = await supabaseAdmin
@@ -13,22 +12,25 @@ export const getAllThings = async (req, res) => {
       description,
       category,
       location,
-      best_time,
       duration,
       cost_level,
       country_id
-    `);
+    `)
+    .order("created_at", { ascending: false });
 
   if (error) return res.status(400).json({ message: error.message });
-  res.json(data);
+
+  res.json({
+    total: data.length,
+    things_to_do: data
+  });
 };
 
 /* =========================
-   GET THINGS TO DO BY COUNTRY
-   GET /api/countries/:id/things-to-do
+   GET THINGS BY COUNTRY
 ========================= */
 export const getThingsByCountry = async (req, res) => {
-  const { id } = req.params;
+  const { countryId } = req.params;
 
   const { data, error } = await supabaseAdmin
     .from("country_things_to_do")
@@ -38,39 +40,48 @@ export const getThingsByCountry = async (req, res) => {
       description,
       category,
       location,
-      best_time,
       duration,
       cost_level
     `)
-    .eq("country_id", id);
+    .eq("country_id", countryId);
 
   if (error) return res.status(400).json({ message: error.message });
-  res.json(data);
+
+  res.json({
+    total: data.length,
+    things_to_do: data
+  });
 };
 
 /* =========================
    CREATE THING TO DO
-   POST /api/countries/:id/things-to-do
 ========================= */
 export const createThing = async (req, res) => {
-  const { id } = req.params;
+  const { countryId } = req.params;
+
+  const { title, category } = req.body;
+  if (!title || !category) {
+    return res.status(400).json({
+      message: "title and category are required"
+    });
+  }
 
   const { data, error } = await supabaseAdmin
     .from("country_things_to_do")
     .insert({
-      country_id: id,
+      country_id: countryId,
       ...req.body
     })
     .select()
     .single();
 
   if (error) return res.status(400).json({ message: error.message });
+
   res.status(201).json(data);
 };
 
 /* =========================
    UPDATE THING TO DO
-   PUT /api/countries/:id/things-to-do/:thingId
 ========================= */
 export const updateThing = async (req, res) => {
   const { thingId } = req.params;
@@ -83,12 +94,12 @@ export const updateThing = async (req, res) => {
     .single();
 
   if (error) return res.status(400).json({ message: error.message });
+
   res.json(data);
 };
 
 /* =========================
    DELETE THING TO DO
-   DELETE /api/countries/:id/things-to-do/:thingId
 ========================= */
 export const deleteThing = async (req, res) => {
   const { thingId } = req.params;
@@ -99,5 +110,6 @@ export const deleteThing = async (req, res) => {
     .eq("id", thingId);
 
   if (error) return res.status(400).json({ message: error.message });
-  res.json({ message: "Thing to do deleted" });
+
+  res.json({ message: "Thing to do deleted successfully" });
 };

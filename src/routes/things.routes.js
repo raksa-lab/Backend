@@ -13,9 +13,9 @@ const router = Router();
 router.get("/things-to-do", getAllThings);
 
 /* BY COUNTRY */
-router.get("/:id/things-to-do", getThingsByCountry);
-router.post("/:id/things-to-do", createThing);
-router.put("/:id/things-to-do/:thingId", updateThing);
-router.delete("/:id/things-to-do/:thingId", deleteThing);
+router.get("/:countryId/things-to-do", getThingsByCountry);
+router.post("/:countryId/things-to-do", createThing);
+router.put("/:countryId/things-to-do/:thingId", updateThing);
+router.delete("/:countryId/things-to-do/:thingId", deleteThing);
 
 export default router;

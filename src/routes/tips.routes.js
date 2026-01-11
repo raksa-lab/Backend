@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  getAllTips,
   getAllTipsGrouped,
   getTipsByCountry,
   createTip,
@@ -10,14 +9,15 @@ import {
 
 const router = Router();
 
-/* ALL TIPS */
-router.get("/", getAllTips);
-router.get("/grouped", getAllTipsGrouped);
+/* GLOBAL */
+router.get("/tips", getAllTipsGrouped);
 
-/* COUNTRY TIPS */
+/* COUNTRY */
 router.get("/:countryId/tips", getTipsByCountry);
 router.post("/:countryId/tips", createTip);
-router.put("/:countryId/tips/:tipId", updateTip);
-router.delete("/:countryId/tips/:tipId", deleteTip);
+
+/* BY ID */
+router.put("/tips/:tipId", updateTip);
+router.delete("/tips/:tipId", deleteTip);
 
 export default router;

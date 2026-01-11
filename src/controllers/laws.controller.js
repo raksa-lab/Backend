@@ -1,40 +1,26 @@
 import { supabaseAdmin } from "../services/supabase.service.js";
 
 /**
- * GET all laws (all countries)
- * GET /api/laws
+ * GET ALL LAWS
  */
 export const getAllLaws = async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from("country_laws")
-    .select("*")
+    .select("id, country_id, title, summary, category, penalty")
     .order("created_at", { ascending: false });
 
   if (error) return res.status(400).json({ message: error.message });
-  res.json(data);
+
+  res.json({
+    total: data.length,
+    laws: data
+  });
 };
 
 /**
- * GET laws of one country
- * GET /api/countries/:countryId/laws
+ * GET LAW BY ID
  */
-export const getCountryLaws = async (req, res) => {
-  const { countryId } = req.params;
-
-  const { data, error } = await supabaseAdmin
-    .from("country_laws")
-    .select("*")
-    .eq("country_id", countryId);
-
-  if (error) return res.status(400).json({ message: error.message });
-  res.json(data);
-};
-
-/**
- * GET one law
- * GET /api/laws/:lawId
- */
-export const getLaw = async (req, res) => {
+export const getLawById = async (req, res) => {
   const { lawId } = req.params;
 
   const { data, error } = await supabaseAdmin
@@ -43,33 +29,25 @@ export const getLaw = async (req, res) => {
     .eq("id", lawId)
     .single();
 
-  if (error) return res.status(404).json({ message: error.message });
+  if (error || !data) {
+    return res.status(404).json({ message: "Law not found" });
+  }
+
   res.json(data);
 };
 
 /**
- * POST create law
- * POST /api/countries/:countryId/laws
+ * POST CREATE LAW
  */
 export const createLaw = async (req, res) => {
   const { countryId } = req.params;
+  const { title, summary, category, penalty } = req.body;
 
-  const {
-    title,
-    summary,
-    details,
-    category,
-    tags,
-    applies_to,
-    region_scope,
-    status,
-    effective_from,
-    last_verified,
-    source_name,
-    source_url,
-    penalty,
-    notes
-  } = req.body;
+  if (!title || !summary || !category) {
+    return res.status(400).json({
+      message: "title, summary, and category are required"
+    });
+  }
 
   const { data, error } = await supabaseAdmin
     .from("country_laws")
@@ -77,79 +55,43 @@ export const createLaw = async (req, res) => {
       country_id: countryId,
       title,
       summary,
-      details,
       category,
-      tags,
-      applies_to,
-      region_scope,
-      status,
-      effective_from,
-      last_verified,
-      source_name,
-      source_url,
-      penalty,
-      notes
+      penalty
     })
     .select()
     .single();
 
   if (error) return res.status(400).json({ message: error.message });
+
   res.status(201).json(data);
 };
 
 /**
- * PUT update law
- * PUT /api/laws/:lawId
+ * PUT UPDATE LAW
  */
 export const updateLaw = async (req, res) => {
   const { lawId } = req.params;
-
-  const {
-    title,
-    summary,
-    details,
-    category,
-    tags,
-    applies_to,
-    region_scope,
-    status,
-    effective_from,
-    last_verified,
-    source_name,
-    source_url,
-    penalty,
-    notes
-  } = req.body;
+  const { title, summary, category, penalty } = req.body;
 
   const { data, error } = await supabaseAdmin
     .from("country_laws")
     .update({
       title,
       summary,
-      details,
       category,
-      tags,
-      applies_to,
-      region_scope,
-      status,
-      effective_from,
-      last_verified,
-      source_name,
-      source_url,
-      penalty,
-      notes
+      penalty
     })
     .eq("id", lawId)
     .select()
     .single();
 
   if (error) return res.status(400).json({ message: error.message });
+
   res.json(data);
 };
 
 /**
- * DELETE law
- * DELETE /api/laws/:lawId
+ * DELETE LAW
  */
 export const deleteLaw = async (req, res) => {
   const { lawId } = req.params;
@@ -160,5 +102,6 @@ export const deleteLaw = async (req, res) => {
     .eq("id", lawId);
 
   if (error) return res.status(400).json({ message: error.message });
+
   res.json({ message: "Law deleted successfully" });
 };

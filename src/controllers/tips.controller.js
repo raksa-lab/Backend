@@ -1,39 +1,34 @@
 import { supabaseAdmin } from "../services/supabase.service.js";
 
 /* =========================
-   GET ALL TIPS (RAW)
-========================= */
-export const getAllTips = async (req, res) => {
-  const { data, error } = await supabaseAdmin
-    .from("country_tips")
-    .select("*");
-
-  if (error) return res.status(400).json({ message: error.message });
-  res.json(data);
-};
-
-/* =========================
    GET ALL TIPS (GROUPED)
 ========================= */
 export const getAllTipsGrouped = async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from("country_tips")
-    .select("category, tip");
+    .select("id, category, short, detail, level");
 
   if (error) return res.status(400).json({ message: error.message });
 
   const map = {};
-  data.forEach(item => {
-    if (!map[item.category]) map[item.category] = [];
-    map[item.category].push(item.tip);
+
+  data.forEach(tip => {
+    if (!map[tip.category]) map[tip.category] = [];
+
+    map[tip.category].push({
+      id: tip.id,
+      short: tip.short,
+      detail: tip.detail,
+      level: tip.level
+    });
   });
 
   const result = Object.keys(map).map(category => ({
     category,
-    tips: map[category]
+    items: map[category]
   }));
 
-  res.json(result);
+  res.json({ tips: result });
 };
 
 /* =========================
@@ -44,11 +39,30 @@ export const getTipsByCountry = async (req, res) => {
 
   const { data, error } = await supabaseAdmin
     .from("country_tips")
-    .select("*")
+    .select("id, category, short, detail, level")
     .eq("country_id", countryId);
 
   if (error) return res.status(400).json({ message: error.message });
-  res.json(data);
+
+  const map = {};
+
+  data.forEach(tip => {
+    if (!map[tip.category]) map[tip.category] = [];
+
+    map[tip.category].push({
+      id: tip.id,
+      short: tip.short,
+      detail: tip.detail,
+      level: tip.level
+    });
+  });
+
+  const result = Object.keys(map).map(category => ({
+    category,
+    items: map[category]
+  }));
+
+  res.json({ tips: result });
 };
 
 /* =========================
@@ -56,10 +70,12 @@ export const getTipsByCountry = async (req, res) => {
 ========================= */
 export const createTip = async (req, res) => {
   const { countryId } = req.params;
-  const { category, tip } = req.body;
+  const { category, short, detail, level } = req.body;
 
-  if (!category || !tip) {
-    return res.status(400).json({ message: "Category and tip are required" });
+  if (!category || !short) {
+    return res.status(400).json({
+      message: "category and short are required"
+    });
   }
 
   const { data, error } = await supabaseAdmin
@@ -67,13 +83,16 @@ export const createTip = async (req, res) => {
     .insert({
       country_id: countryId,
       category,
-      tip
+      short,
+      detail,
+      level
     })
     .select()
     .single();
 
   if (error) return res.status(400).json({ message: error.message });
-  res.json(data);
+
+  res.status(201).json(data);
 };
 
 /* =========================
@@ -81,16 +100,16 @@ export const createTip = async (req, res) => {
 ========================= */
 export const updateTip = async (req, res) => {
   const { tipId } = req.params;
-  const { category, tip } = req.body;
 
   const { data, error } = await supabaseAdmin
     .from("country_tips")
-    .update({ category, tip })
+    .update(req.body)
     .eq("id", tipId)
     .select()
     .single();
 
   if (error) return res.status(400).json({ message: error.message });
+
   res.json(data);
 };
 
@@ -106,5 +125,6 @@ export const deleteTip = async (req, res) => {
     .eq("id", tipId);
 
   if (error) return res.status(400).json({ message: error.message });
-  res.json({ message: "Tip deleted" });
+
+  res.json({ message: "Tip deleted successfully" });
 };

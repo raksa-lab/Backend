@@ -1,106 +1,93 @@
 import { supabaseAdmin } from "../services/supabase.service.js";
 
 /* =========================
-   GET ALL ATTRACTIONS (ALL COUNTRIES)
-   GET /api/attractions
+   HELPER: CLEAN ATTRACTION
+========================= */
+const pickAttraction = (a) => ({
+  id: a.id,
+  name: a.name,
+  category: a.category,
+  description: a.description,
+  location: a.location,
+  opening_hours: a.opening_hours,
+  best_time_to_visit: a.best_time_to_visit,
+  estimated_visit_time: a.estimated_visit_time,
+  access_type: a.access_type,
+  highlights: a.highlights,
+  rules: a.rules,
+  images: a.images
+});
+
+/* =========================
+   GET ALL ATTRACTIONS
 ========================= */
 export const getAllAttractions = async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from("country_attractions")
-    .select(`
-      id,
-      name,
-      description,
-      location,
-      latitude,
-      longitude,
-      image_url,
-      entry_fee,
-      best_time_to_visit,
-      estimated_visit_time,
-      country_id
-    `);
+    .select("*");
 
   if (error) return res.status(400).json({ message: error.message });
-  res.json(data);
+
+  res.json(data.map(pickAttraction));
 };
 
 /* =========================
-   GET ATTRACTIONS BY COUNTRY
-   GET /api/countries/:id/attractions
+   GET BY COUNTRY
 ========================= */
 export const getAttractionsByCountry = async (req, res) => {
-  const { id } = req.params;
+  const { countryId } = req.params;
 
   const { data, error } = await supabaseAdmin
     .from("country_attractions")
-    .select(`
-      id,
-      name,
-      description,
-      location,
-      latitude,
-      longitude,
-      image_url,
-      entry_fee,
-      best_time_to_visit,
-      estimated_visit_time
-    `)
-    .eq("country_id", id);
+    .select("*")
+    .eq("country_id", countryId);
 
   if (error) return res.status(400).json({ message: error.message });
-  res.json(data);
+
+  res.json(data.map(pickAttraction));
 };
 
 /* =========================
-   GET TOP ATTRACTIONS
-   GET /api/countries/:id/attractions/top
+   GET ATTRACTION DETAIL
 ========================= */
-export const getTopAttractions = async (req, res) => {
-  const { id } = req.params;
+export const getAttractionDetail = async (req, res) => {
+  const { attractionId } = req.params;
 
   const { data, error } = await supabaseAdmin
     .from("country_attractions")
-    .select(`
-      id,
-      name,
-      description,
-      location,
-      image_url,
-      entry_fee,
-      best_time_to_visit,
-      estimated_visit_time
-    `)
-    .eq("country_id", id)
-    .limit(5);
+    .select("*")
+    .eq("id", attractionId)
+    .single();
 
-  if (error) return res.status(400).json({ message: error.message });
-  res.json(data);
+  if (error || !data) {
+    return res.status(404).json({ message: "Attraction not found" });
+  }
+
+  res.json(pickAttraction(data));
 };
 
 /* =========================
    CREATE ATTRACTION
-   POST /api/countries/:id/attractions
 ========================= */
 export const createAttraction = async (req, res) => {
-  const { id } = req.params;
+  const { countryId } = req.params;
 
   const { data, error } = await supabaseAdmin
     .from("country_attractions")
     .insert({
-      country_id: id,
+      country_id: countryId,
       ...req.body
     })
     .select()
     .single();
 
   if (error) return res.status(400).json({ message: error.message });
-  res.status(201).json(data);
+
+  res.status(201).json(pickAttraction(data));
 };
 
 /* =========================
    UPDATE ATTRACTION
-   PUT /api/countries/:id/attractions/:attractionId
 ========================= */
 export const updateAttraction = async (req, res) => {
   const { attractionId } = req.params;
@@ -113,12 +100,12 @@ export const updateAttraction = async (req, res) => {
     .single();
 
   if (error) return res.status(400).json({ message: error.message });
-  res.json(data);
+
+  res.json(pickAttraction(data));
 };
 
 /* =========================
    DELETE ATTRACTION
-   DELETE /api/countries/:id/attractions/:attractionId
 ========================= */
 export const deleteAttraction = async (req, res) => {
   const { attractionId } = req.params;
@@ -129,5 +116,6 @@ export const deleteAttraction = async (req, res) => {
     .eq("id", attractionId);
 
   if (error) return res.status(400).json({ message: error.message });
-  res.json({ message: "Attraction deleted" });
+
+  res.json({ message: "Attraction deleted successfully" });
 };

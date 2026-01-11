@@ -118,19 +118,41 @@
 import { supabaseAdmin } from "../services/supabase.service.js";
 
 /* =========================
-   HELPER: GROUP TIPS BY CATEGORY
+   HELPER: GROUP TIPS
 ========================= */
 const groupTipsByCategory = (tips = []) => {
   const map = {};
 
-  tips.forEach(item => {
-    if (!map[item.category]) map[item.category] = [];
-    map[item.category].push(item.tip);
+  tips.forEach(t => {
+    if (!map[t.category]) map[t.category] = [];
+
+    map[t.category].push({
+      id: t.id,
+      short: t.short,
+      detail: t.detail,
+      level: t.level
+    });
   });
 
-  return Object.entries(map).map(([category, tips]) => ({
+  return Object.entries(map).map(([category, items]) => ({
     category,
-    tips
+    items
+  }));
+};
+
+/* =========================
+   HELPER: GROUP LAWS
+========================= */
+const groupLawsByCategory = (laws = []) => {
+  const map = {};
+  laws.forEach(l => {
+    if (!map[l.category]) map[l.category] = [];
+    map[l.category].push(l);
+  });
+
+  return Object.entries(map).map(([category, laws]) => ({
+    category,
+    laws
   }));
 };
 
@@ -169,15 +191,18 @@ export const getDetail = async (req, res) => {
       flag: countryRes.data.flag,
       capital: countryRes.data.capital,
 
-      /* ALWAYS PRESENT */
       overview: overviewRes.data ?? null,
-      laws: lawsRes.data ?? [],
+
+      laws: groupLawsByCategory(lawsRes.data ?? []),
+
       attractions: attractionsRes.data ?? [],
       thingsToDo: thingsRes.data ?? [],
-      tips: tipsRes.data ? groupTipsByCategory(tipsRes.data) : []
+      tips: tipsRes.data ?? []
     }
   });
 };
+
+
 
 /* =========================
    GET ALL COUNTRIES DETAIL
@@ -211,23 +236,19 @@ export const getAllDetail = async (req, res) => {
     ]);
 
     const region = c.region || "Unknown";
-
     if (!result[region]) result[region] = [];
 
     result[region].push({
-      country: {
-        id: c.id,
-        name: c.name,
-        region: c.region,
-        flag: c.flag,
-        capital: c.capital,
+      id: c.id,
+      name: c.name,
+      flag: c.flag,
+      capital: c.capital,
 
-        overview: overviewRes.data ?? null,
-        laws: lawsRes.data ?? [],
-        attractions: attractionsRes.data ?? [],
-        thingsToDo: thingsRes.data ?? [],
-        tips: tipsRes.data ? groupTipsByCategory(tipsRes.data) : []
-      }
+      overview: overviewRes.data ?? null,
+      laws: groupLawsByCategory(lawsRes.data ?? []),
+      attractions: attractionsRes.data ?? [],
+      thingsToDo: thingsRes.data ?? [],
+      tips: tipsRes.data ? groupTipsByCategory(tipsRes.data) : []
     });
   }
 
