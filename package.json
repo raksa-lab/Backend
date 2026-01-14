@@ -2,7 +2,7 @@
   "name": "auth-backend",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --exec \"node --import dotenv/config\" src/server.js",
+    "dev": "nodemon --exec \"node --import dotenv/config src/server.js\"",
     "start": "node --import dotenv/config src/server.js"
   },
   "dependencies": {
@@ -15,5 +15,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
