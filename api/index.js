@@ -1,4 +1,7 @@
-import serverless from "serverless-http";
-import app from "../src/app.js";
+import serverless from "serverless-http"
+import dotenv from "dotenv"
+import app from "../src/app.js"
 
-export default serverless(app);
+dotenv.config()
+
+export default serverless(app)
